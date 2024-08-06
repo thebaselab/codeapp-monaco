@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monaco Editor for Code App</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div tabindex="0" id="overlay"></div>
+    <div
+      id="monaco-editor-root"
+      style="width: 100%; height: 100vh; overflow: hidden"
+    ></div>
+    <script type="module">
+      import {
+        installInterface,
+        configureMonacoWorkers,
+        runClient,
+      } from "./src/client.ts";
+      configureMonacoWorkers();
+      await runClient();
+      installInterface();
+    </script>
+  </body>
+</html>
