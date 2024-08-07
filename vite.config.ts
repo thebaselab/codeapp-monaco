@@ -9,13 +9,12 @@ import vsixPlugin from "@codingame/monaco-vscode-rollup-vsix-plugin";
 import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
-  base: "",
   build: {
     outDir: "monaco-textmate.bundle",
-    assetsDir: "monaco-textmate.bundle/assets",
+    assetsDir: "assets",
     emptyOutDir: true,
     cssCodeSplit: false,
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
         name: "monaco-textmate",

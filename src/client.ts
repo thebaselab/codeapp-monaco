@@ -34,6 +34,7 @@ import {
 } from "./common";
 import { CodeStorage } from "./storage";
 import { toggleVimMode } from "./vim";
+import { workerConfig } from "./utilities";
 
 declare global {
   interface Window {
@@ -110,6 +111,7 @@ export const configureMonacoWorkers = () => {
     },
   });
 };
+
 export const runClient = async () => {
   await initServices({
     serviceConfig: {
@@ -117,13 +119,7 @@ export const runClient = async () => {
         ...getThemeServiceOverride(),
         ...getTextmateServiceOverride(),
         ...getConfigurationServiceOverride(Uri.file("/workspace")),
-        ...getExtensionServiceOverride({
-          url: new URL(
-            "vscode/workers/extensionHost.worker",
-            import.meta.url
-          ).toString(),
-          options: { type: "module" },
-        }),
+        ...getExtensionServiceOverride(workerConfig),
       },
       debugLogging: true,
     },
