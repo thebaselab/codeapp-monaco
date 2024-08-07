@@ -122,7 +122,7 @@ export function switchToDiffView(
   CodeStorage.editor = undefined;
 
   CodeStorage.diffEditor = monaco.editor.createDiffEditor(
-    document.getElementById("container")!,
+    document.getElementById("monaco-editor-root")!,
     {
       enableSplitViewResizing: false,
       automaticLayout: true,
@@ -141,7 +141,7 @@ export function switchToNormalView() {
   CodeStorage.diffEditor?.dispose();
   CodeStorage.diffEditor = undefined;
   CodeStorage.editor = monaco.editor.create(
-    document.getElementById("container")!,
+    document.getElementById("monaco-editor-root")!,
     {
       theme: "vs-dark",
       automaticLayout: true,
