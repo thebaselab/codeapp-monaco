@@ -9,6 +9,11 @@ import getThemeServiceOverride from "@codingame/monaco-vscode-theme-service-over
 import getTextmateServiceOverride from "@codingame/monaco-vscode-textmate-service-override";
 import "@codingame/monaco-vscode-theme-defaults-default-extension";
 import "@codingame/monaco-vscode-all-language-default-extensions";
+import "@codingame/monaco-vscode-typescript-language-features-default-extension";
+import "@codingame/monaco-vscode-json-language-features-default-extension";
+import "@codingame/monaco-vscode-css-language-features-default-extension";
+import "@codingame/monaco-vscode-html-language-features-default-extension";
+import getExtensionServiceOverride from "@codingame/monaco-vscode-extensions-service-override";
 import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
 import { useWorkerFactory } from "monaco-editor-wrapper/workerFactory";
 import { initWebSocketAndStartClient } from "./languageService";
@@ -108,6 +113,13 @@ export const runClient = async () => {
         ...getThemeServiceOverride(),
         ...getTextmateServiceOverride(),
         ...getConfigurationServiceOverride(Uri.file("/workspace")),
+        ...getExtensionServiceOverride({
+          url: new URL(
+            "vscode/workers/extensionHost.worker",
+            import.meta.url
+          ).toString(),
+          options: { type: "module" },
+        }),
       },
       debugLogging: true,
     },
@@ -127,14 +139,16 @@ export const runClient = async () => {
     ?.dispose();
 
   installInterface();
-  applyListeners(CodeStorage.editor);
 
   // const model = monaco.editor.createModel(
-  //   "print('Hello, world!')",
+  //   "console.log()",
   //   undefined,
-  //   monaco.Uri.parse("file:///main.py")
+  //   monaco.Uri.parse("file:///index.html")
   // );
   // CodeStorage.editor?.setModel(model);
+
+  applyListeners(CodeStorage.editor);
+
   // initWebSocketAndStartClient("ws://localhost:30001/pyright");
 
   // const testTheme = {
