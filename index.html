@@ -14,14 +14,10 @@
       style="width: 100%; height: 100vh; overflow: hidden"
     ></div>
     <script type="module">
-      import {
-        installInterface,
-        configureMonacoWorkers,
-        runClient,
-      } from "./src/client.ts";
+      import { configureMonacoWorkers, runClient } from "./src/client.ts";
+
       configureMonacoWorkers();
       await runClient();
-      installInterface();
     </script>
   </body>
 </html>

@@ -6,6 +6,7 @@ import {
   IChange,
 } from "vscode/vscode/vs/editor/common/diff/legacyLinesDiffComputer";
 import { decodeBase64 } from "./utilities";
+import { CodeStorage } from "./storage";
 
 let previousDecoration: string[] = [];
 
@@ -100,9 +101,9 @@ export function computeDiffForURI(uri: string) {
         }
         jsonChanges.push(decoration as any);
       }
-      if (!editor) return;
+      if (!CodeStorage.editor) return;
 
-      previousDecoration = editor.deltaDecorations(
+      previousDecoration = CodeStorage.editor.deltaDecorations(
         previousDecoration,
         jsonChanges
       );
@@ -139,6 +140,9 @@ function getChangeType(change: IChange) {
 }
 
 export function invalidateDecorations() {
-  if (!editor) return;
-  previousDecoration = editor.deltaDecorations(previousDecoration, []);
+  if (!CodeStorage.editor) return;
+  previousDecoration = CodeStorage.editor.deltaDecorations(
+    previousDecoration,
+    []
+  );
 }

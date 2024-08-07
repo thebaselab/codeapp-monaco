@@ -15,8 +15,11 @@ import { initWebSocketAndStartClient } from "./languageService";
 import { Uri } from "vscode";
 import { computeDirtyDiff, invalidateDecorations } from "./diff";
 import { IChange } from "vscode/vscode/vs/editor/common/diff/legacyLinesDiffComputer";
-import { setTheme } from "./theme";
+// @ts-ignore-error
+import { EditorContributionRegistry } from "vscode/vscode/vs/editor/browser/editorExtensions";
+import { applyBase64AsTheme } from "./theme";
 import {
+  applyListeners,
   onRequestNewTextModel,
   renameModel,
   setModel,
@@ -24,13 +27,9 @@ import {
   switchToDiffView,
   switchToNormalView,
 } from "./common";
+import { CodeStorage } from "./storage";
 
 declare global {
-  let editor: monaco.editor.IStandaloneCodeEditor | undefined;
-  let diffEditor: monaco.editor.IStandaloneDiffEditor | undefined;
-  let customDarkTheme: any | undefined;
-  let customLightTheme: any | undefined;
-
   interface Window {
     monaco: typeof monaco;
     editor: monaco.editor.IStandaloneCodeEditor | undefined;
@@ -60,7 +59,7 @@ declare global {
     invalidateDecorations: () => void;
 
     // theme
-    setTheme: (base64Theme: string) => void;
+    applyBase64AsTheme: (base64Theme: string) => void;
 
     // TODO: vim
   }
@@ -71,7 +70,7 @@ export function installInterface() {
   window.monaco = monaco;
 
   // Export Interface to global scope
-  window.editor = editor;
+  window.editor = CodeStorage.editor;
   window.setModel = setModel;
   window.onRequestNewTextModel = onRequestNewTextModel;
   window.renameModel = renameModel;
@@ -84,7 +83,7 @@ export function installInterface() {
   window.computeDirtyDiff = computeDirtyDiff;
   window.invalidateDecorations = invalidateDecorations;
 
-  window.setTheme = setTheme;
+  window.applyBase64AsTheme = applyBase64AsTheme;
 }
 
 export const configureMonacoWorkers = () => {
@@ -115,21 +114,28 @@ export const runClient = async () => {
   });
 
   // create monaco editor
-  editor = monaco.editor.create(
+  CodeStorage.editor = monaco.editor.create(
     document.getElementById("monaco-editor-root")!,
     {
       automaticLayout: true,
       theme: "vs-dark",
     }
   );
-  const model = monaco.editor.createModel(
-    "print('Hello, world!')",
-    undefined,
-    monaco.Uri.parse("file:///main.py")
-  );
-  editor.setModel(model);
 
-  initWebSocketAndStartClient("ws://localhost:30001/pyright");
+  CodeStorage.editor
+    .getContribution("editor.contrib.iPadShowKeyboard")
+    ?.dispose();
+
+  installInterface();
+  applyListeners(CodeStorage.editor);
+
+  // const model = monaco.editor.createModel(
+  //   "print('Hello, world!')",
+  //   undefined,
+  //   monaco.Uri.parse("file:///main.py")
+  // );
+  // CodeStorage.editor?.setModel(model);
+  // initWebSocketAndStartClient("ws://localhost:30001/pyright");
 
   // const testTheme = {
   //     colors: {

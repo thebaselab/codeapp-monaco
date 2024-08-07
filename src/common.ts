@@ -2,26 +2,27 @@ import * as monaco from "monaco-editor";
 import { decodeBase64 } from "./utilities";
 import { changeEditorThemeForColorScheme } from "./theme";
 import { computeDiffForURI } from "./diff";
+import { CodeStorage } from "./storage";
 
 let states: { [key: string]: monaco.editor.ICodeEditorViewState } = {};
 
 export function setModel(base64Url: string) {
-  if (!editor) return;
+  if (!CodeStorage.editor) return;
   const model = monaco.editor.getModel(
     monaco.Uri.parse(decodeBase64(base64Url))
   );
   if (!model) return;
-  editor.setModel(model);
+  CodeStorage.editor.setModel(model);
 }
 
 export function onRequestNewTextModel(
   base64Url: string,
   base64Content: string
 ) {
-  if (!editor) return;
+  if (!CodeStorage.editor) return;
 
-  const existingModelUri = editor.getModel()?.uri.toString();
-  const state = editor.saveViewState();
+  const existingModelUri = CodeStorage.editor.getModel()?.uri.toString();
+  const state = CodeStorage.editor.saveViewState();
   if (existingModelUri && state) {
     states[existingModelUri] = state;
   }
@@ -34,8 +35,8 @@ export function onRequestNewTextModel(
     if (existingModel.getValue() !== newModelContent) {
       existingModel.setValue(newModelContent);
     }
-    if (editor.getModel() !== existingModel) {
-      editor.setModel(existingModel);
+    if (CodeStorage.editor.getModel() !== existingModel) {
+      CodeStorage.editor.setModel(existingModel);
     }
   } else {
     const newModel = monaco.editor.createModel(
@@ -43,7 +44,7 @@ export function onRequestNewTextModel(
       undefined,
       newModelUri
     );
-    editor.setModel(newModel);
+    CodeStorage.editor.setModel(newModel);
   }
 }
 
@@ -71,10 +72,10 @@ export function renameModel(base64OldUrl: string, base64NewUrl: string) {
 export function setValueForModel(base64Url: string, base64Content: string) {
   const url = decodeBase64(base64Url);
   const model = monaco.editor.getModel(monaco.Uri.parse(url));
-  if (!model || !editor) return;
+  if (!model || !CodeStorage.editor) return;
 
-  if (editor.getModel() === model) {
-    editor.executeEdits("code.app.native", [
+  if (CodeStorage.editor.getModel() === model) {
+    CodeStorage.editor.executeEdits("code.app.native", [
       {
         range: model.getFullModelRange(),
         text: decodeBase64(base64Content),
@@ -92,7 +93,7 @@ export function switchToDiffView(
   base64UrlOriginal: string,
   base64UrlModified: string
 ) {
-  if (!editor) return;
+  if (!CodeStorage.editor) return;
 
   const originalText = decodeBase64(base64OriginalText);
   const modifiedText = decodeBase64(base64ModifiedText);
@@ -117,10 +118,10 @@ export function switchToDiffView(
     modifiedUri
   );
 
-  editor.dispose();
-  editor = undefined;
+  CodeStorage.editor.dispose();
+  CodeStorage.editor = undefined;
 
-  diffEditor = monaco.editor.createDiffEditor(
+  CodeStorage.diffEditor = monaco.editor.createDiffEditor(
     document.getElementById("container")!,
     {
       enableSplitViewResizing: false,
@@ -128,29 +129,32 @@ export function switchToDiffView(
       renderSideBySide: true,
     }
   );
-  diffEditor.setModel({
+  CodeStorage.diffEditor.setModel({
     original: originalModel,
     modified: modifiedModel,
   });
-  applyListeners(diffEditor.getOriginalEditor());
-  applyListeners(diffEditor.getModifiedEditor());
+  applyListeners(CodeStorage.diffEditor.getOriginalEditor());
+  applyListeners(CodeStorage.diffEditor.getModifiedEditor());
 }
 
 export function switchToNormalView() {
-  diffEditor?.dispose();
-  diffEditor = undefined;
-  editor = monaco.editor.create(document.getElementById("container")!, {
-    theme: "vs-dark",
-    automaticLayout: true,
-    unicodeHighlight: {
-      ambiguousCharacters: false,
-    },
-  });
-  editor.getModel()?.dispose();
-  applyListeners(editor);
+  CodeStorage.diffEditor?.dispose();
+  CodeStorage.diffEditor = undefined;
+  CodeStorage.editor = monaco.editor.create(
+    document.getElementById("container")!,
+    {
+      theme: "vs-dark",
+      automaticLayout: true,
+      unicodeHighlight: {
+        ambiguousCharacters: false,
+      },
+    }
+  );
+  CodeStorage.editor.getModel()?.dispose();
+  applyListeners(CodeStorage.editor);
 }
 
-function applyListeners(instance: monaco.editor.IStandaloneCodeEditor) {
+export function applyListeners(instance: monaco.editor.IStandaloneCodeEditor) {
   changeEditorThemeForColorScheme();
 
   window
@@ -164,11 +168,11 @@ function applyListeners(instance: monaco.editor.IStandaloneCodeEditor) {
   });
 
   instance.onDidChangeModel((event) => {
-    if (!event.newModelUrl || !editor) return;
+    if (!event.newModelUrl || !CodeStorage.editor) return;
     const newModel = (event.newModelUrl as any)._formatted;
 
     if (newModel in states) {
-      editor.restoreViewState(states[newModel]);
+      CodeStorage.editor.restoreViewState(states[newModel]);
     }
 
     (window as any).webkit.messageHandlers.toggleMessageHandler.postMessage({
