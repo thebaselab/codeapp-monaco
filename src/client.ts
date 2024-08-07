@@ -33,6 +33,7 @@ import {
   switchToNormalView,
 } from "./common";
 import { CodeStorage } from "./storage";
+import { toggleVimMode } from "./vim";
 
 declare global {
   interface Window {
@@ -66,7 +67,8 @@ declare global {
     // theme
     applyBase64AsTheme: (base64Theme: string) => void;
 
-    // TODO: vim
+    // vim
+    toggleVimMode: (enabled: boolean) => void;
   }
 }
 
@@ -89,6 +91,8 @@ export function installInterface() {
   window.invalidateDecorations = invalidateDecorations;
 
   window.applyBase64AsTheme = applyBase64AsTheme;
+
+  window.toggleVimMode = toggleVimMode;
 }
 
 export const configureMonacoWorkers = () => {
@@ -140,12 +144,12 @@ export const runClient = async () => {
 
   installInterface();
 
-  // const model = monaco.editor.createModel(
-  //   "console.log()",
-  //   undefined,
-  //   monaco.Uri.parse("file:///index.html")
-  // );
-  // CodeStorage.editor?.setModel(model);
+  const model = monaco.editor.createModel(
+    "console.log()",
+    undefined,
+    monaco.Uri.parse("file:///index.html")
+  );
+  CodeStorage.editor?.setModel(model);
 
   applyListeners(CodeStorage.editor);
 
