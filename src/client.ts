@@ -18,8 +18,7 @@ import getConfigurationServiceOverride from "@codingame/monaco-vscode-configurat
 import { useWorkerFactory } from "monaco-editor-wrapper/workerFactory";
 import { initWebSocketAndStartClient } from "./languageService";
 import { Uri } from "vscode";
-import { computeDirtyDiff, invalidateDecorations } from "./diff";
-import { IChange } from "vscode/vscode/vs/editor/common/diff/legacyLinesDiffComputer";
+import { invalidateDecorations, provideOriginalTextForUri } from "./diff";
 // @ts-ignore-error
 import { EditorContributionRegistry } from "vscode/vscode/vs/editor/browser/editorExtensions";
 import { applyBase64AsTheme } from "./theme";
@@ -58,12 +57,8 @@ declare global {
     initWebSocketAndStartClient: (url: string) => WebSocket;
 
     // diff
-    computeDirtyDiff: (
-      originalUrl: string,
-      modifiedUrl: string,
-      ignoreTrimWhitespace: boolean
-    ) => Promise<IChange[] | null>;
     invalidateDecorations: () => void;
+    provideOriginalTextForUri: (uri: string, base64Content: string) => void;
 
     // theme
     applyBase64AsTheme: (base64Theme: string) => void;
@@ -88,8 +83,8 @@ export function installInterface() {
 
   window.initWebSocketAndStartClient = initWebSocketAndStartClient;
 
-  window.computeDirtyDiff = computeDirtyDiff;
   window.invalidateDecorations = invalidateDecorations;
+  window.provideOriginalTextForUri = provideOriginalTextForUri;
 
   window.applyBase64AsTheme = applyBase64AsTheme;
 
