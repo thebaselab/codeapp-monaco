@@ -7,4 +7,5 @@ export namespace CodeStorage {
     undefined;
   export let customDarkTheme: any | undefined = undefined;
   export let customLightTheme: any | undefined = undefined;
+  export let languageClientWebSocket: WebSocket | undefined = undefined;
 }

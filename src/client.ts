@@ -16,7 +16,11 @@ import "@codingame/monaco-vscode-html-language-features-default-extension";
 import getExtensionServiceOverride from "@codingame/monaco-vscode-extensions-service-override";
 import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
 import { useWorkerFactory } from "monaco-editor-wrapper/workerFactory";
-import { initWebSocketAndStartClient } from "./languageService";
+import {
+  connectMonacoToLanguageServer,
+  disconnectLanguageServer,
+  isLanguageServiceConnected,
+} from "./languageService";
 import { Uri } from "vscode";
 import { invalidateDecorations, provideOriginalTextForUri } from "./diff";
 // @ts-ignore-error
@@ -54,7 +58,14 @@ declare global {
     switchToNormalView: () => void;
 
     // language service
-    initWebSocketAndStartClient: (url: string) => WebSocket;
+    connectMonacoToLanguageServer: (
+      url: string,
+      args: [string],
+      pwdBookmark: string,
+      languageIdentifier: string
+    ) => WebSocket;
+    disconnectLanguageServer: () => void;
+    isLanguageServiceConnected: () => boolean;
 
     // diff
     invalidateDecorations: () => void;
@@ -81,7 +92,9 @@ export function installInterface() {
   window.switchToDiffView = switchToDiffView;
   window.switchToNormalView = switchToNormalView;
 
-  window.initWebSocketAndStartClient = initWebSocketAndStartClient;
+  window.connectMonacoToLanguageServer = connectMonacoToLanguageServer;
+  window.disconnectLanguageServer = disconnectLanguageServer;
+  window.isLanguageServiceConnected = isLanguageServiceConnected;
 
   window.invalidateDecorations = invalidateDecorations;
   window.provideOriginalTextForUri = provideOriginalTextForUri;
