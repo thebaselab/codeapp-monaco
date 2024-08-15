@@ -42,6 +42,7 @@ export const connectMonacoToLanguageServer = (
         args: args,
         redirectStderr: false,
         workingDirectoryBookmark: pwdBookmark,
+        isLanguageService: true,
       })
     );
     // quick hack: wait for the server to start (5 seconds)
@@ -58,11 +59,10 @@ export const connectMonacoToLanguageServer = (
       languageIdentifier
     );
     languageClient.start();
-    reader.onClose(() => languageClient.stop());
-  };
-
-  webSocket.onclose = () => {
-    languageServerConnectionDidDrop(languageIdentifier);
+    reader.onClose(() => {
+      languageServerConnectionDidDrop(languageIdentifier);
+      languageClient.stop();
+    });
   };
   return webSocket;
 };
