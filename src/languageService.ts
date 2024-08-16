@@ -48,8 +48,8 @@ export const connectMonacoToLanguageServer = (
         isLanguageService: true,
       })
     );
-    // quick hack: wait for the server to start (5 seconds)
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // quick hack: wait for the server to start (2 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const socket = toSocket(webSocket);
     const reader = new WebSocketMessageReader(socket);
