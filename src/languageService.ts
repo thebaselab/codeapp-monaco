@@ -10,6 +10,8 @@ import {
   MessageTransports,
 } from "vscode-languageclient";
 import { CodeStorage } from "./storage";
+import { Uri } from "vscode";
+import { decodeBase64 } from "./utilities";
 
 function languageServerConnectionDidDrop(languageIdentifier: string) {
   (window as any).webkit.messageHandlers.toggleMessageHandler.postMessage({
@@ -30,6 +32,7 @@ export function disconnectLanguageServer() {
 export const connectMonacoToLanguageServer = (
   url: string,
   args: [string],
+  base64PwdUrl: string,
   pwdBookmark: string,
   languageIdentifier: string
 ): WebSocket => {
@@ -56,7 +59,8 @@ export const connectMonacoToLanguageServer = (
         reader,
         writer,
       },
-      languageIdentifier
+      languageIdentifier,
+      decodeBase64(base64PwdUrl)
     );
     languageClient.start();
     reader.onClose(() => {
@@ -69,7 +73,8 @@ export const connectMonacoToLanguageServer = (
 
 const createLanguageClient = (
   transports: MessageTransports,
-  languageIdentifier: string
+  languageIdentifier: string,
+  workspaceUri: string
 ): MonacoLanguageClient => {
   return new MonacoLanguageClient({
     name: "Sample Language Client",
@@ -80,6 +85,11 @@ const createLanguageClient = (
       errorHandler: {
         error: () => ({ action: ErrorAction.Continue }),
         closed: () => ({ action: CloseAction.DoNotRestart }),
+      },
+      workspaceFolder: {
+        index: 0,
+        name: "workspace",
+        uri: Uri.parse(workspaceUri),
       },
     },
     // create a language client connection from the JSON RPC connection on demand

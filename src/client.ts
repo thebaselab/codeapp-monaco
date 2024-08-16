@@ -61,6 +61,7 @@ declare global {
     connectMonacoToLanguageServer: (
       url: string,
       args: [string],
+      base64PwdUrl: string,
       pwdBookmark: string,
       languageIdentifier: string
     ) => WebSocket;
