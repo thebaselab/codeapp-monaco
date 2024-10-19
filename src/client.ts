@@ -149,12 +149,12 @@ export const runClient = async () => {
 
   installInterface();
 
-  const model = monaco.editor.createModel(
-    "console.log()",
-    undefined,
-    monaco.Uri.parse("file:///index.html")
-  );
-  CodeStorage.editor?.setModel(model);
+  // const model = monaco.editor.createModel(
+  //   "console.log()",
+  //   undefined,
+  //   monaco.Uri.parse("file:///index.html")
+  // );
+  // CodeStorage.editor?.setModel(model);
 
   applyListeners(CodeStorage.editor);
 
