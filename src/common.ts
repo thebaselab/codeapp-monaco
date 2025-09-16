@@ -93,7 +93,28 @@ export function switchToDiffView(
   base64UrlOriginal: string,
   base64UrlModified: string
 ) {
-  if (!CodeStorage.editor) return;
+  if (!CodeStorage.diffEditor) {
+    CodeStorage.editor?.dispose();
+    CodeStorage.editor = undefined;
+    CodeStorage.diffEditor = monaco.editor.createDiffEditor(
+      document.getElementById("monaco-editor-root")!,
+      {
+        enableSplitViewResizing: false,
+        automaticLayout: true,
+        renderSideBySide: true,
+      }
+    );
+    CodeStorage.diffEditor
+      .getOriginalEditor()
+      .getContribution("editor.contrib.iPadShowKeyboard")
+      ?.dispose();
+    CodeStorage.diffEditor
+      .getModifiedEditor()
+      .getContribution("editor.contrib.iPadShowKeyboard")
+      ?.dispose();
+    applyListeners(CodeStorage.diffEditor.getOriginalEditor());
+    applyListeners(CodeStorage.diffEditor.getModifiedEditor());
+  }
 
   const originalText = decodeBase64(base64OriginalText);
   const modifiedText = decodeBase64(base64ModifiedText);
@@ -118,23 +139,10 @@ export function switchToDiffView(
     modifiedUri
   );
 
-  CodeStorage.editor.dispose();
-  CodeStorage.editor = undefined;
-
-  CodeStorage.diffEditor = monaco.editor.createDiffEditor(
-    document.getElementById("monaco-editor-root")!,
-    {
-      enableSplitViewResizing: false,
-      automaticLayout: true,
-      renderSideBySide: true,
-    }
-  );
   CodeStorage.diffEditor.setModel({
     original: originalModel,
     modified: modifiedModel,
   });
-  applyListeners(CodeStorage.diffEditor.getOriginalEditor());
-  applyListeners(CodeStorage.diffEditor.getModifiedEditor());
 }
 
 export function switchToNormalView() {
@@ -151,6 +159,9 @@ export function switchToNormalView() {
     }
   );
   CodeStorage.editor.getModel()?.dispose();
+  CodeStorage.editor
+    .getContribution("editor.contrib.iPadShowKeyboard")
+    ?.dispose();
   applyListeners(CodeStorage.editor);
 }
 
@@ -278,4 +289,12 @@ export function applyListeners(instance: monaco.editor.IStandaloneCodeEditor) {
       url: url,
     });
   };
+}
+
+export function goToNextDiff() {
+  CodeStorage.diffEditor?.goToDiff("next");
+}
+
+export function goToPreviousDiff() {
+  CodeStorage.diffEditor?.goToDiff("previous");
 }

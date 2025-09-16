@@ -28,6 +28,8 @@ import { EditorContributionRegistry } from "vscode/vscode/vs/editor/browser/edit
 import { applyBase64AsTheme } from "./theme";
 import {
   applyListeners,
+  goToNextDiff,
+  goToPreviousDiff,
   onRequestNewTextModel,
   renameModel,
   setModel,
@@ -56,6 +58,8 @@ declare global {
       base64UrlModified: string
     ) => void;
     switchToNormalView: () => void;
+    goToNextDiff: () => void;
+    goToPreviousDiff: () => void;
 
     // language service
     connectMonacoToLanguageServer: (
@@ -92,6 +96,8 @@ export function installInterface() {
   window.setValueForModel = setValueForModel;
   window.switchToDiffView = switchToDiffView;
   window.switchToNormalView = switchToNormalView;
+  window.goToNextDiff = goToNextDiff;
+  window.goToPreviousDiff = goToPreviousDiff;
 
   window.connectMonacoToLanguageServer = connectMonacoToLanguageServer;
   window.disconnectLanguageServer = disconnectLanguageServer;
@@ -138,8 +144,11 @@ export const runClient = async () => {
   CodeStorage.editor = monaco.editor.create(
     document.getElementById("monaco-editor-root")!,
     {
-      automaticLayout: true,
       theme: "vs-dark",
+      automaticLayout: true,
+      unicodeHighlight: {
+        ambiguousCharacters: false,
+      },
     }
   );
 
@@ -148,23 +157,5 @@ export const runClient = async () => {
     ?.dispose();
 
   installInterface();
-
-  // const model = monaco.editor.createModel(
-  //   "console.log()",
-  //   undefined,
-  //   monaco.Uri.parse("file:///index.html")
-  // );
-  // CodeStorage.editor?.setModel(model);
-
   applyListeners(CodeStorage.editor);
-
-  // initWebSocketAndStartClient("ws://localhost:30001/pyright");
-
-  // const testTheme = {
-  //     colors: {
-  //         'editor.background': '#db3232',
-  //     },
-  //     tokenColors: []
-  // }
-  // setTheme(btoa(unescape(encodeURIComponent(JSON.stringify(testTheme)))));
 };
