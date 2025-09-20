@@ -87,6 +87,36 @@ export function setValueForModel(base64Url: string, base64Content: string) {
   }
 }
 
+function createEditorRootDOM(): HTMLDivElement | undefined {
+  // Remove existing DOM
+  document.getElementById("monaco-editor-root")?.remove();
+  // Create editor DOM in body after div id="overlay"
+  const overlay = document.getElementById("overlay");
+  if (!overlay) return;
+  const editorRoot = document.createElement("div");
+  editorRoot.id = "monaco-editor-root";
+  editorRoot.style = "width: 100%; height: 100vh; overflow: hidden";
+  overlay.insertAdjacentElement("afterend", editorRoot);
+  return editorRoot;
+}
+
+function disposeAllEditors() {
+  if (CodeStorage.editor) {
+    CodeStorage.editor.dispose();
+    CodeStorage.editor = undefined;
+  }
+  if (CodeStorage.diffEditor) {
+    CodeStorage.diffEditor.getModifiedEditor().dispose();
+    CodeStorage.diffEditor.getOriginalEditor().dispose();
+    CodeStorage.diffEditor.dispose();
+    CodeStorage.diffEditor = undefined;
+  }
+  const editorRoot = document.getElementById("monaco-editor-root");
+  if (editorRoot) {
+    editorRoot.innerHTML = "";
+  }
+}
+
 export function switchToDiffView(
   base64OriginalText: string,
   base64ModifiedText: string,
@@ -94,10 +124,9 @@ export function switchToDiffView(
   base64UrlModified: string
 ) {
   if (!CodeStorage.diffEditor) {
-    CodeStorage.editor?.dispose();
-    CodeStorage.editor = undefined;
+    disposeAllEditors();
     CodeStorage.diffEditor = monaco.editor.createDiffEditor(
-      document.getElementById("monaco-editor-root")!,
+      createEditorRootDOM()!,
       {
         enableSplitViewResizing: false,
         automaticLayout: true,
@@ -146,18 +175,14 @@ export function switchToDiffView(
 }
 
 export function switchToNormalView() {
-  CodeStorage.diffEditor?.dispose();
-  CodeStorage.diffEditor = undefined;
-  CodeStorage.editor = monaco.editor.create(
-    document.getElementById("monaco-editor-root")!,
-    {
-      theme: "vs-dark",
-      automaticLayout: true,
-      unicodeHighlight: {
-        ambiguousCharacters: false,
-      },
-    }
-  );
+  disposeAllEditors();
+  CodeStorage.editor = monaco.editor.create(createEditorRootDOM()!, {
+    theme: "vs-dark",
+    automaticLayout: true,
+    unicodeHighlight: {
+      ambiguousCharacters: false,
+    },
+  });
   CodeStorage.editor.getModel()?.dispose();
   CodeStorage.editor
     .getContribution("editor.contrib.iPadShowKeyboard")
